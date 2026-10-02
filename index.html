@@ -20,10 +20,10 @@
       background-color: #34d399 !important;
     }
 
-    /* 手机呼吸灯 (展示时长配合调长) */
+    /* 手机呼吸灯 (橘色与红色统一 8 秒舒缓周期) */
     @keyframes orangeGlow {
       0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
-      50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
+      50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.85); }
     }
     .alert-glow-orange {
       animation: orangeGlow 1.4s infinite ease-in-out;
@@ -84,7 +84,7 @@
         <div class="w-14 h-8 bg-white border border-slate-300 rounded text-[10px] font-mono font-bold flex items-center justify-center">SKU-09</div>
         <div class="w-14 h-8 bg-white border border-slate-300 rounded text-[10px] font-mono font-bold flex items-center justify-center">SKU-10</div>
         
-        <!-- 活动开门格口 (精准对齐基准) -->
+        <!-- 活动开门格口 (对齐基准) -->
         <div class="perspective-box w-14 h-8">
           <div id="target-bin" class="locker-door w-full h-full bg-indigo-600 text-white rounded text-[10px] font-mono font-black flex items-center justify-center shadow">
             SKU-11
@@ -113,46 +113,29 @@
       </div>
     </div>
 
-    <!-- 舞台动画层 -->
+    <!-- 舞台动画层 (仅保留单个极简小人与送货员) -->
     <div class="w-full h-full absolute inset-0 pointer-events-none z-10">
       
-      <!-- 员工 1 -->
-      <div id="worker-1" class="w-4 h-6 absolute z-20">
+      <!-- 极简单个蓝色员工 (初始在左外侧隐形) -->
+      <div id="single-worker" class="w-4 h-6 absolute z-20 opacity-0" style="left: -100px; top: 0;">
         <div class="w-2.5 h-2.5 bg-blue-300 mx-auto rounded-xs"></div>
         <div class="w-4 h-3.5 bg-blue-600 rounded-xs flex items-center justify-end">
-          <div class="item-hand w-1.5 h-1.5 bg-amber-400 border border-black hidden mr-[-2px]"></div>
+          <div id="carried-item" class="w-1.5 h-1.5 bg-amber-400 border border-black hidden mr-[-2px]"></div>
         </div>
       </div>
 
-      <!-- 员工 2 -->
-      <div id="worker-2" class="w-4 h-6 absolute z-20">
-        <div class="w-2.5 h-2.5 bg-blue-300 mx-auto rounded-xs"></div>
-        <div class="w-4 h-3.5 bg-blue-600 rounded-xs flex items-center justify-end">
-          <div class="item-hand w-1.5 h-1.5 bg-amber-400 border border-black hidden mr-[-2px]"></div>
-        </div>
-      </div>
-
-      <!-- 员工 3 -->
-      <div id="worker-3" class="w-4 h-6 absolute z-20">
-        <div class="w-2.5 h-2.5 bg-blue-300 mx-auto rounded-xs"></div>
-        <div class="w-4 h-3.5 bg-blue-600 rounded-xs flex items-center justify-end">
-          <div class="item-hand w-1.5 h-1.5 bg-amber-400 border border-black hidden mr-[-2px]"></div>
-        </div>
-      </div>
-
-      <!-- 补货员 + 推车组 (精准对齐货箱与格口) -->
-      <div id="restocker-sprite" class="absolute flex items-end space-x-1 z-20">
+      <!-- 补货员 + 推车组 (彻底隐藏初始状态，防止左上角出现残影) -->
+      <div id="restocker-sprite" class="absolute flex items-end space-x-1 z-20 opacity-0" style="left: -200px; top: 0; display: none;">
         <div class="w-4 h-6">
           <div class="w-2.5 h-2.5 bg-amber-200 mx-auto rounded-xs"></div>
           <div class="w-4 h-3.5 bg-amber-500 rounded-xs"></div>
         </div>
-        <!-- 推车 (宽 32px，中心定位于右侧货箱上) -->
         <div class="w-8 h-5 bg-amber-700 border border-amber-900 rounded-xs flex items-center justify-center">
           <div class="w-3 h-2 bg-amber-300 border border-amber-600"></div>
         </div>
       </div>
 
-      <!-- 补货小道具 (垂直对准 SKU-11 坠落) -->
+      <!-- 补货小方块道具 (垂直落入) -->
       <div id="toss-box" class="w-2.5 h-2.5 bg-amber-400 border border-black absolute opacity-0 z-30 transition-all duration-400"></div>
     </div>
 
@@ -202,7 +185,7 @@
         </div>
       </div>
 
-      <!-- 动态警告展示区 (8 秒超长醒目展示) -->
+      <!-- 动态警告展示区 (双警报均享受 8 秒超长展示) -->
       <div id="alert-box" class="h-8 mb-1.5 flex items-center justify-center shrink-0"></div>
 
       <!-- 实时存取记录 -->
@@ -219,7 +202,7 @@
     </div>
   </div>
 
-  <!-- ================= 精密对齐与舒缓节奏驱动引擎 ================= -->
+  <!-- ================= 极简单人单行精控驱动引擎 ================= -->
   <script>
     const INITIAL_STOCK = 100;
     let currentStock = INITIAL_STOCK;
@@ -236,12 +219,8 @@
     const phoneCase = document.getElementById('phone-case');
     const targetBin = document.getElementById('target-bin');
     const tossBox = document.getElementById('toss-box');
-
-    const workers = [
-      document.getElementById('worker-1'),
-      document.getElementById('worker-2'),
-      document.getElementById('worker-3')
-    ];
+    const worker = document.getElementById('single-worker');
+    const carriedItem = document.getElementById('carried-item');
     const restocker = document.getElementById('restocker-sprite');
 
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -285,7 +264,7 @@
       logList.prepend(itemEl);
     }
 
-    // 警报展示延长至 8000ms (8秒)
+    // 橘色与红色警报统一延长至整整 8000ms (8秒)
     function triggerAlert(msg, type = 'orange') {
       phoneCase.classList.remove('alert-glow-orange', 'alert-glow-red');
       const isRed = type === 'red';
@@ -312,142 +291,99 @@
       else targetBin.classList.remove('door-open');
     }
 
-    // 主无限循环（纯直线、精准垂直居中对齐、从容节奏）
+    // 单个小人标准取货动作
+    async function singleWorkerAction(user, qty, workerStandX, frontY, parentWidth, alertType = null, alertMsg = "") {
+      // 1. 初始化就位于左侧外
+      worker.style.transition = 'none';
+      worker.style.left = '-60px';
+      worker.style.top = `${frontY}px`;
+      worker.style.opacity = '1';
+      carriedItem.style.display = 'none';
+
+      await sleep(100);
+
+      // 2. 匀速入场停在 SKU-11 正下方
+      worker.style.transition = 'left 2.6s linear';
+      worker.style.left = `${workerStandX}px`;
+      await sleep(2650);
+
+      // 3. 开柜门拿货
+      toggleDoor(true);
+      await sleep(450);
+      carriedItem.style.display = 'block';
+      writeLog(user, "SKU-11", "item-XYZ01", qty);
+
+      if (alertType) {
+        triggerAlert(alertMsg, alertType);
+        timerEl.innerText = alertType === 'red' ? '1 Day' : '6 Days';
+      }
+
+      await sleep(500);
+      toggleDoor(false);
+
+      // 4. 匀速向右出画
+      worker.style.transition = 'left 2.6s linear';
+      worker.style.left = `${parentWidth + 40}px`;
+      await sleep(2650);
+      worker.style.opacity = '0';
+    }
+
+    // 主无限循环 (极简、对齐、无残影)
     async function startContinuousLoop() {
       while (true) {
-        // ================= 严格精准计算 SKU-11 的绝对中心 =================
+        // 精准几何中心计算
         const binRect = targetBin.getBoundingClientRect();
         const parentRect = document.getElementById('warehouse-view').getBoundingClientRect();
         
-        // SKU-11 的绝对水平中心线 (X 轴)
         const binCenterX = (binRect.left + binRect.width / 2) - parentRect.left;
-        
-        // 小人取货站位 (小人宽 16px，减去 8px 保证小人躯干正中心对准 SKU-11)
         const workerStandX = binCenterX - 8;
-        
-        // 补货员推车停靠站位 (推车总宽约 48px，后方货箱中心正对 SKU-11，推车左边缘约减去 32px)
         const restockerStandX = binCenterX - 32;
 
-        // 通道 Y 轴坐标
-        const frontY = binRect.bottom + 12 - parentRect.top;  // 正面走廊
-        const backY = binRect.top - 34 - parentRect.top;       // 背面走廊
+        const frontY = binRect.bottom + 12 - parentRect.top;
+        const backY = binRect.top - 34 - parentRect.top;
 
-        // ---------------- 1. 初始化 3 个员工 (拉大入场间距) ----------------
-        // 间距从原本几十像素拉开至 -140px, -280px，留出充分的前后脚舒缓节奏
-        const startX = [ -60, -200, -340 ]; 
-        for (let i = 0; i < 3; i++) {
-          workers[i].style.transition = 'none';
-          workers[i].style.left = `${startX[i]}px`;
-          workers[i].style.top = `${frontY}px`;
-          workers[i].style.opacity = '1';
-          workers[i].querySelector('.item-hand').style.display = 'none';
-        }
+        // ---------------- 阶段 1: 员工 1 正常取货 ----------------
+        await singleWorkerAction("Staff #03", 8, workerStandX, frontY, parentRect.width);
+        await sleep(2000); // 舒缓间隔
 
-        await sleep(200);
+        // ---------------- 阶段 2: 员工 2 大批量取货 -> 橘色警告 8 秒 ----------------
+        await singleWorkerAction("Staff #07", 46, workerStandX, frontY, parentRect.width, 'orange', "ANOMALY: High usage volume detected!");
+        // 留出长达 6 秒专供看清橘色呼吸灯和倒计时
+        await sleep(6000);
 
-        // ---------------- 2. 三人接力流水线 (节奏全面放缓 3~4 倍) ----------------
+        // ---------------- 阶段 3: 员工 3 取光库存 -> 红色警告 8 秒 ----------------
+        await singleWorkerAction("Staff #09", 36, workerStandX, frontY, parentRect.width, 'red', "CRITICAL: Low safety stock! Order placed.");
+        // 留出长达 6 秒看清红色呼吸灯紧急报警
+        await sleep(6000);
 
-        // ==== 员工 1 取货 ====
-        workers[0].style.transition = 'left 3.2s linear';
-        workers[0].style.left = `${workerStandX}px`; // 精准对齐 SKU-11
-
-        workers[1].style.transition = 'left 3.2s linear';
-        workers[1].style.left = `${workerStandX - 140}px`;
-
-        workers[2].style.transition = 'left 3.2s linear';
-        workers[2].style.left = `${workerStandX - 280}px`;
-
-        await sleep(3250);
-
-        // 员工 1 停顿取货
-        toggleDoor(true);
-        await sleep(500);
-        workers[0].querySelector('.item-hand').style.display = 'block';
-        writeLog("Staff #03", "SKU-11", "item-XYZ01", 8);
-        await sleep(500);
-        toggleDoor(false);
-
-        // 沉稳停顿，拉开入场间隔
-        await sleep(1500);
-
-        // ==== 员工 1 离开，员工 2 到位 ====
-        workers[0].style.transition = 'left 3.2s linear';
-        workers[0].style.left = `${parentRect.width + 40}px`;
-
-        workers[1].style.transition = 'left 2.6s linear';
-        workers[1].style.left = `${workerStandX}px`; // 精准对齐 SKU-11
-
-        workers[2].style.transition = 'left 2.6s linear';
-        workers[2].style.left = `${workerStandX - 140}px`;
-
-        await sleep(2650);
-
-        // 员工 2 拿大批量物品（触发长达 8 秒橘黄色呼吸灯）
-        toggleDoor(true);
-        await sleep(500);
-        workers[1].querySelector('.item-hand').style.display = 'block';
-        writeLog("Staff #07", "SKU-11", "item-XYZ01", 46);
-        triggerAlert("ANOMALY: High usage volume detected!", "orange");
-        timerEl.innerText = "6 Days";
-        await sleep(500);
-        toggleDoor(false);
-
-        // 留出长达 4 秒供观众看清橘色警报与倒计时跳动！
-        await sleep(4000);
-
-        // ==== 员工 2 离开，员工 3 到位 ====
-        workers[1].style.transition = 'left 3.2s linear';
-        workers[1].style.left = `${parentRect.width + 40}px`;
-
-        workers[2].style.transition = 'left 2.6s linear';
-        workers[2].style.left = `${workerStandX}px`; // 精准对齐 SKU-11
-
-        await sleep(2650);
-
-        // 员工 3 拿光库存（触发长达 8 秒红色高危警报）
-        toggleDoor(true);
-        await sleep(500);
-        workers[2].querySelector('.item-hand').style.display = 'block';
-        writeLog("Staff #09", "SKU-11", "item-XYZ01", 36);
-        triggerAlert("CRITICAL: Low safety stock! Order placed.", "red");
-        timerEl.innerText = "1 Day";
-        await sleep(500);
-        toggleDoor(false);
-
-        // 员工 3 平稳离开
-        workers[2].style.transition = 'left 3.2s linear';
-        workers[2].style.left = `${parentRect.width + 40}px`;
-
-        // 留出长达 4.5 秒看清红色紧急警报！
-        await sleep(4500);
-
-        // ---------------- 3. 背面通道：补货推车精准对齐补货 ----------------
+        // ---------------- 阶段 4: 送货员背面通道沉稳快速进场 ----------------
+        restocker.style.display = 'flex'; // 开始动画时才显示，彻底杜绝左上角残影
         restocker.style.transition = 'none';
-        restocker.style.left = '-120px';
+        restocker.style.left = '-100px';
         restocker.style.top = `${backY}px`;
         restocker.style.opacity = '1';
         await sleep(50);
 
-        // 慢速推车，推车货箱精准停在 SKU-11 轴心
-        restocker.style.transition = 'left 4.2s ease-in-out';
+        // 提速推车 (2.8 秒平稳到位)
+        restocker.style.transition = 'left 2.8s ease-in-out';
         restocker.style.left = `${restockerStandX}px`;
-        await sleep(4250);
+        await sleep(2850);
 
         toggleDoor(true);
-        await sleep(400);
+        await sleep(350);
 
-        // 补货小方块从货箱中心垂直飞入 SKU-11 中心
+        // 货物垂直精准抛入 SKU-11
         tossBox.style.transition = 'none';
         tossBox.style.left = `${binCenterX - 5}px`;
         tossBox.style.top = `${backY + 12}px`;
         tossBox.style.opacity = '1';
         await sleep(50);
 
-        tossBox.style.transition = 'all 0.55s cubic-bezier(0.25, 1, 0.5, 1)';
+        tossBox.style.transition = 'all 0.45s cubic-bezier(0.25, 1, 0.5, 1)';
         tossBox.style.top = `${binRect.top + 6 - parentRect.top}px`;
-        await sleep(600);
-        tossBox.style.opacity = '0';
         await sleep(500);
+        tossBox.style.opacity = '0';
+        await sleep(400);
         toggleDoor(false);
 
         // 手机面板重置
@@ -471,13 +407,15 @@
         `;
         logList.prepend(restockLog);
 
-        // 推车沿背面通道平稳向右离开
-        restocker.style.transition = 'left 4.2s ease-in';
+        // 提速离开 (2.8 秒移出画卷)
+        restocker.style.transition = 'left 2.8s ease-in';
         restocker.style.left = `${parentRect.width + 50}px`;
-        await sleep(4300);
+        await sleep(2900);
+        
         restocker.style.opacity = '0';
+        restocker.style.display = 'none'; // 离开后再次彻底隐藏
 
-        await sleep(2000); // 留出 2 秒空白优雅衔接下一轮
+        await sleep(2500); // 间隔后进入全新一轮
       }
     }
 
