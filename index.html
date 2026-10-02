@@ -9,30 +9,9 @@
   <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    /* 像素小人 */
-    .pixel-man {
-      width: 14px;
-      height: 24px;
-      position: absolute;
-    }
-    .pixel-head {
-      width: 10px;
-      height: 10px;
-      margin: 0 auto;
-      border-radius: 2px;
-    }
-    .pixel-body {
-      width: 14px;
-      height: 14px;
-      border-radius: 2px 2px 0 0;
-      position: relative;
-    }
 
     /* 3D 柜门 */
-    .perspective-box {
-      perspective: 300px;
-    }
+    .perspective-box { perspective: 250px; }
     .locker-door {
       transform-origin: left center;
       transition: transform 0.4s ease, background-color 0.3s;
@@ -42,10 +21,10 @@
       background-color: #34d399 !important;
     }
 
-    /* 手机呼吸灯 */
+    /* 呼吸灯效果 */
     @keyframes orangeGlow {
-      0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
-      50% { box-shadow: 0 0 35px rgba(245, 158, 11, 0.8); }
+      0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.7); }
     }
     .alert-glow-orange {
       animation: orangeGlow 1.2s infinite ease-in-out;
@@ -53,28 +32,25 @@
     }
 
     @keyframes redGlow {
-      0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
-      50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.9); }
+      0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.9); }
     }
     .alert-glow-red {
       animation: redGlow 1.2s infinite ease-in-out;
       border-color: #ef4444 !important;
     }
 
-    /* 日志平滑进入 */
     @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-8px); }
+      from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .log-enter {
-      animation: slideIn 0.35s ease-out forwards;
-    }
+    .log-enter { animation: slideIn 0.35s ease-out forwards; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 flex flex-col md:flex-row h-screen w-screen overflow-hidden font-sans m-0 p-0">
+<body class="bg-slate-100 text-slate-800 flex h-screen w-screen overflow-hidden font-sans m-0 p-0">
 
-  <!-- ================= LEFT: Warehouse Area ================= -->
-  <div class="w-full md:w-3/5 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-slate-300 relative flex flex-col justify-between p-6 bg-slate-200 overflow-hidden">
+  <!-- ================= LEFT AREA (65% 宽度，库房全景) ================= -->
+  <div id="warehouse-view" class="w-[65%] h-full border-r border-slate-300 relative flex flex-col justify-between p-6 bg-slate-200 select-none">
     
     <!-- 标头与创始人名字 -->
     <div class="z-20">
@@ -82,17 +58,179 @@
       <p class="text-xs text-slate-600 font-medium">Founders: Marie Avdonina &amp; Zhe Hao</p>
     </div>
 
-    <!-- 5排智能柜矩阵 -->
-    <div class="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col space-y-3 z-10 scale-90 md:scale-95">
+    <!-- 5 排智能柜矩阵 (间距增加为原来的 3 倍，留出超大通透走廊) -->
+    <div class="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col space-y-6 z-10 w-[380px]">
       
       <!-- ROW 01 -->
-      <div class="flex items-center space-x-1.5 bg-slate-300/70 p-1.5 rounded-lg border border-slate-400">
-        <div class="w-16 text-center"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[9px] font-mono font-bold text-slate-700">ROW 01</div></div>
-        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-01</div>
-        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-02</div>
-        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-03</div>
-        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-04</div>
+      <div class="flex items-center space-x-1.5 bg-slate-300/80 p-1 rounded border border-slate-400">
+        <div class="w-16 text-center leading-tight"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[8px] font-mono font-bold text-slate-700">ROW 01</div></div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-01</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-02</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-03</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-04</div>
       </div>
 
       <!-- ROW 02 -->
-      <div class="flex items-center space-x-1.5 bg-slate-300/70 p
+      <div class="flex items-center space-x-1.5 bg-slate-300/80 p-1 rounded border border-slate-400">
+        <div class="w-16 text-center leading-tight"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[8px] font-mono font-bold text-slate-700">ROW 02</div></div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-05</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-06</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-07</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-08</div>
+      </div>
+
+      <!-- ROW 03: 核心互动格口 (留出上下充足过道) -->
+      <div id="row-target" class="flex items-center space-x-1.5 bg-indigo-50/90 p-1 rounded border-2 border-indigo-500 shadow">
+        <div class="w-16 text-center leading-tight"><div class="text-[7px] text-indigo-500 font-black">LOCKSTOCK</div><div class="text-[8px] font-mono font-black text-indigo-700">ROW 03</div></div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-09</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-10</div>
+        
+        <!-- 活动开门格口 -->
+        <div class="perspective-box w-12 h-6">
+          <div id="target-bin" class="locker-door w-full h-full bg-indigo-600 text-white rounded text-[8px] font-mono font-bold flex items-center justify-center shadow">
+            SKU-11
+          </div>
+        </div>
+
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-12</div>
+      </div>
+
+      <!-- ROW 04 -->
+      <div class="flex items-center space-x-1.5 bg-slate-300/80 p-1 rounded border border-slate-400">
+        <div class="w-16 text-center leading-tight"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[8px] font-mono font-bold text-slate-700">ROW 04</div></div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-13</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-14</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-15</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-16</div>
+      </div>
+
+      <!-- ROW 05 -->
+      <div class="flex items-center space-x-1.5 bg-slate-300/80 p-1 rounded border border-slate-400">
+        <div class="w-16 text-center leading-tight"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[8px] font-mono font-bold text-slate-700">ROW 05</div></div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-17</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-18</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-19</div>
+        <div class="w-12 h-6 bg-white border border-slate-300 rounded text-[8px] font-mono flex items-center justify-center">SKU-20</div>
+      </div>
+    </div>
+
+    <!-- 舞台动画层 (绝对定位) -->
+    <div class="w-full h-full absolute inset-0 pointer-events-none z-10">
+      
+      <!-- 排队队伍 (左下方) -->
+      <div class="absolute bottom-6 left-8 flex flex-col space-y-1.5">
+        <div class="w-3 h-5 relative"><div class="w-2 h-2 bg-blue-300 mx-auto rounded-xs"></div><div class="w-3 h-3 bg-blue-600 rounded-xs"></div></div>
+        <div class="w-3 h-5 relative"><div class="w-2 h-2 bg-blue-300 mx-auto rounded-xs"></div><div class="w-3 h-3 bg-blue-600 rounded-xs"></div></div>
+        <div class="w-3 h-5 relative"><div class="w-2 h-2 bg-blue-300 mx-auto rounded-xs"></div><div class="w-3 h-3 bg-blue-600 rounded-xs"></div></div>
+        <div class="w-3 h-5 relative"><div class="w-2 h-2 bg-blue-300 mx-auto rounded-xs"></div><div class="w-3 h-3 bg-blue-600 rounded-xs"></div></div>
+      </div>
+
+      <!-- 移动小人 1 -->
+      <div id="worker-1" class="w-3.5 h-6 absolute opacity-0 z-20">
+        <div class="w-2.5 h-2.5 bg-blue-300 mx-auto rounded-xs"></div>
+        <div class="w-3.5 h-3.5 bg-blue-600 rounded-xs flex items-center justify-end">
+          <div class="item-hand w-1.5 h-1.5 bg-amber-400 border border-black hidden mr-[-2px]"></div>
+        </div>
+      </div>
+
+      <!-- 移动小人 2 -->
+      <div id="worker-2" class="w-3.5 h-6 absolute opacity-0 z-20">
+        <div class="w-2.5 h-2.5 bg-blue-300 mx-auto rounded-xs"></div>
+        <div class="w-3.5 h-3.5 bg-blue-600 rounded-xs flex items-center justify-end">
+          <div class="item-hand w-1.5 h-1.5 bg-amber-400 border border-black hidden mr-[-2px]"></div>
+        </div>
+      </div>
+
+      <!-- 补货员 + 推车 -->
+      <div id="restocker-unit" class="absolute flex items-end space-x-1 opacity-0 z-20">
+        <div class="w-3.5 h-6">
+          <div class="w-2.5 h-2.5 bg-amber-200 mx-auto rounded-xs"></div>
+          <div class="w-3.5 h-3.5 bg-amber-500 rounded-xs"></div>
+        </div>
+        <div class="w-7 h-5 bg-amber-700 border border-amber-900 rounded-xs flex items-center justify-center">
+          <div class="w-3 h-2 bg-amber-300 border border-amber-600"></div>
+        </div>
+      </div>
+
+      <!-- 飞入小道具 -->
+      <div id="flying-box" class="w-2 h-2 bg-amber-400 border border-black absolute opacity-0 z-30"></div>
+    </div>
+
+    <div></div>
+  </div>
+
+  <!-- ================= RIGHT AREA (35% 宽度，手机APP界面，绝对居中) ================= -->
+  <div class="w-[35%] h-full flex items-center justify-center p-4 bg-slate-100 shrink-0">
+    
+    <!-- 手机外框 -->
+    <div id="phone-case" class="w-[310px] h-[560px] bg-white border-4 border-slate-300 rounded-[36px] p-3.5 flex flex-col justify-between shadow-2xl relative transition-all duration-300">
+      
+      <!-- 灵动岛 -->
+      <div class="w-20 h-3 bg-slate-200 rounded-full mx-auto mb-1.5 shrink-0"></div>
+
+      <!-- APP Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-1.5 shrink-0">
+        <div class="flex items-center space-x-1.5">
+          <div class="w-2.5 h-2.5 rounded bg-indigo-600 flex items-center justify-center text-[7px] text-white font-black">L</div>
+          <span class="text-xs font-black tracking-wider text-slate-900 font-mono">LOCKSTOCK-APP</span>
+        </div>
+        <span class="text-[8px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">ONLINE</span>
+      </div>
+
+      <!-- 看板面板 -->
+      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-1.5 shrink-0 shadow-sm">
+        <div class="text-[8px] uppercase font-mono tracking-wider text-slate-600 mb-1 font-bold">Inventory Status</div>
+        
+        <div class="grid grid-cols-2 gap-1.5 text-center">
+          <div class="bg-white p-1.5 rounded border border-slate-200">
+            <span class="text-[9px] text-slate-500 uppercase block font-bold">In Stock</span>
+            <span id="stock-val" class="text-lg font-mono font-black text-slate-900">100</span>
+          </div>
+          
+          <div class="bg-white p-1.5 rounded border border-slate-200 flex flex-col justify-between">
+            <div class="flex justify-between items-center px-0.5">
+              <span class="text-[9px] text-slate-500 uppercase font-bold">Forecast/Mo</span>
+              <svg class="w-6 h-2.5 text-indigo-600" viewBox="0 0 32 12" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M0 10 L8 8 L16 9 L24 4 L32 2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span id="forecast-val" class="text-lg font-mono font-black text-indigo-700 text-center">1,200</span>
+          </div>
+        </div>
+
+        <div class="mt-2 text-[9px] flex justify-between items-center text-slate-700 px-1 font-mono font-bold">
+          <span>Auto-Restock ETA:</span>
+          <span id="timer-val" class="text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">14 Days</span>
+        </div>
+      </div>
+
+      <!-- 动态警告展示区 -->
+      <div id="alert-box" class="h-8 mb-1.5 flex items-center justify-center shrink-0"></div>
+
+      <!-- 实时存取记录 -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <span class="text-[9px] uppercase tracking-wider font-mono text-slate-700 mb-1 font-bold shrink-0">Activity Stream</span>
+        <div id="log-list" class="flex-1 bg-slate-50 rounded-xl p-2 overflow-y-auto no-scrollbar space-y-1.5 border border-slate-200 text-[10px] font-mono">
+          <div class="p-1.5 bg-white rounded border border-slate-200 flex justify-between items-center text-slate-600">
+            <span class="font-bold text-indigo-600">INIT</span>
+            <span>2026-10-01 · READY</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= 核心动画驱动脚本 ================= -->
+  <script>
+    const INITIAL_STOCK = 100;
+    let currentStock = INITIAL_STOCK;
+    let forecastDemand = 1200;
+    let dayCount = 2;
+
+    const stockEl = document.getElementById('stock-val');
+    const forecastEl = document.getElementById('forecast-val');
+    const timerEl = document.getElementById('timer-val');
+    const logList = document.getElementById('log-list');
+    const alertBox = document.getElementById('alert-box');
+    const phoneCase = doc
