@@ -124,7 +124,7 @@
         </div>
       </div>
 
-      <!-- 补货员 + 推车组 (彻底隐藏初始状态，防止左上角出现残影) -->
+      <!-- 补货员 + 推车组 (彻底隐藏初始状态) -->
       <div id="restocker-sprite" class="absolute flex items-end space-x-1 z-20 opacity-0" style="left: -200px; top: 0; display: none;">
         <div class="w-4 h-6">
           <div class="w-2.5 h-2.5 bg-amber-200 mx-auto rounded-xs"></div>
@@ -193,8 +193,8 @@
         <span class="text-[9px] uppercase tracking-wider font-mono text-slate-700 mb-1 font-bold shrink-0">Activity Stream</span>
         <div id="log-list" class="flex-1 bg-slate-50 rounded-xl p-2 overflow-y-auto no-scrollbar space-y-1.5 border border-slate-200 text-[10px] font-mono">
           <div class="p-1.5 bg-white rounded border border-slate-200 flex justify-between items-center text-slate-600">
-            <span class="font-bold text-indigo-600">INIT</span>
-            <span>2026-10-01 08:30:00 · READY</span>
+            <span class="font-bold text-indigo-600">CYCLE START</span>
+            <span>2026-10-01 08:00:00 · BASELINE</span>
           </div>
         </div>
       </div>
@@ -202,14 +202,11 @@
     </div>
   </div>
 
-  <!-- ================= 极简单人单行精控驱动引擎 ================= -->
+  <!-- ================= 业务与时间戳逻辑严密绑定引擎 ================= -->
   <script>
     const INITIAL_STOCK = 100;
     let currentStock = INITIAL_STOCK;
     let forecastDemand = 1200;
-    let dayCount = 2;
-    let hourCount = 9;
-    let minCount = 12;
 
     const stockEl = document.getElementById('stock-val');
     const forecastEl = document.getElementById('forecast-val');
@@ -225,25 +222,8 @@
 
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    function getFullTimestamp() {
-      const d = dayCount < 10 ? `0${dayCount}` : `${dayCount}`;
-      const h = hourCount < 10 ? `0${hourCount}` : `${hourCount}`;
-      const m = minCount < 10 ? `0${minCount}` : `${minCount}`;
-      const s = Math.floor(Math.random() * 40 + 10);
-      
-      minCount += 22;
-      if (minCount >= 60) {
-        minCount -= 60;
-        hourCount += 1;
-      }
-      if (hourCount >= 18) {
-        hourCount = 9;
-        dayCount += 1;
-      }
-      return `2026-10-${d} ${h}:${m}:${s}`;
-    }
-
-    function writeLog(user, sku, item, qty) {
+    // 写日志 (严格使用传入的特定真实时间字符串)
+    function writeLog(user, sku, item, qty, timeString) {
       currentStock -= qty;
       forecastDemand += (qty * 4);
       stockEl.innerText = currentStock;
@@ -255,7 +235,7 @@
         <div>
           <div class="flex items-center space-x-1">
             <span class="text-indigo-700 font-black">[${user}]</span> 
-            <span class="text-slate-500 font-semibold">${getFullTimestamp()}</span>
+            <span class="text-slate-500 font-semibold">${timeString}</span>
           </div>
           <div class="text-[9px] text-slate-700 font-bold">${sku} · ${item}</div>
         </div>
@@ -264,7 +244,7 @@
       logList.prepend(itemEl);
     }
 
-    // 橘色与红色警报统一延长至整整 8000ms (8秒)
+    // 8 秒超长警报
     function triggerAlert(msg, type = 'orange') {
       phoneCase.classList.remove('alert-glow-orange', 'alert-glow-red');
       const isRed = type === 'red';
@@ -292,7 +272,7 @@
     }
 
     // 单个小人标准取货动作
-    async function singleWorkerAction(user, qty, workerStandX, frontY, parentWidth, alertType = null, alertMsg = "") {
+    async function singleWorkerAction(user, qty, timeString, remainingDaysText, workerStandX, frontY, parentWidth, alertType = null, alertMsg = "") {
       worker.style.transition = 'none';
       worker.style.left = '-60px';
       worker.style.top = `${frontY}px`;
@@ -306,15 +286,15 @@
       worker.style.left = `${workerStandX}px`;
       await sleep(2650);
 
-      // 开柜门拿货
+      // 开柜门拿货，时间戳与倒计时严格联动更新
       toggleDoor(true);
       await sleep(450);
       carriedItem.style.display = 'block';
-      writeLog(user, "SKU-11", "item-XYZ01", qty);
+      writeLog(user, "SKU-11", "item-XYZ01", qty, timeString);
+      timerEl.innerText = remainingDaysText; // 倒计时精确同步推进！
 
       if (alertType) {
         triggerAlert(alertMsg, alertType);
-        timerEl.innerText = alertType === 'red' ? '1 Day' : '6 Days';
       }
 
       await sleep(500);
@@ -327,7 +307,7 @@
       worker.style.opacity = '0';
     }
 
-    // 主无限循环 (精确数值闭环)
+    // 主无限循环 (时间与倒计时严格递进联动)
     async function startContinuousLoop() {
       while (true) {
         // 精准几何中心计算
@@ -341,19 +321,47 @@
         const frontY = binRect.bottom + 12 - parentRect.top;
         const backY = binRect.top - 34 - parentRect.top;
 
-        // ---------------- 阶段 1: 第 1 个员工取走 18 个 (剩余 82) ----------------
-        await singleWorkerAction("Staff #03", 18, workerStandX, frontY, parentRect.width);
+        // ---------------- 阶段 1: 第 1 人（清晨 08:42 取走 18 个，剩余 82，安全倒计时同步变为 11 Days） ----------------
+        await singleWorkerAction(
+          "Staff #03", 
+          18, 
+          "2026-10-04 08:42:15", 
+          "11 Days", 
+          workerStandX, 
+          frontY, 
+          parentRect.width
+        );
         await sleep(2000);
 
-        // ---------------- 阶段 2: 第 2 个员工取走 60 个 (剩余 22) -> 橘色警告 8 秒 ----------------
-        await singleWorkerAction("Staff #07", 60, workerStandX, frontY, parentRect.width, 'orange', "ANOMALY: High usage volume detected!");
-        await sleep(6000); // 预留看清呼吸灯与倒计时
+        // ---------------- 阶段 2: 第 2 人（下周下午 14:15 取走 60 个，剩余 22，倒计时加速跌至 5 Days -> 橘色警告） ----------------
+        await singleWorkerAction(
+          "Staff #07", 
+          60, 
+          "2026-10-09 14:15:30", 
+          "5 Days", 
+          workerStandX, 
+          frontY, 
+          parentRect.width, 
+          'orange', 
+          "ANOMALY: High usage volume detected!"
+        );
+        await sleep(6000); // 留出充分时间看清橘色呼吸灯
 
-        // ---------------- 阶段 3: 第 3 个员工取走 12 个 (剩余 10，见底触发补货) -> 红色警告 8 秒 ----------------
-        await singleWorkerAction("Staff #09", 12, workerStandX, frontY, parentRect.width, 'red', "CRITICAL: Low safety stock (10 left)! Order placed.");
-        await sleep(6000); // 预留看清红色高危警报
+        // ---------------- 阶段 3: 第 3 人（傍晚 17:28 取走 12 个，剩余 10，见底倒计时变为 1 Day -> 红色紧急警告） ----------------
+        await singleWorkerAction(
+          "Staff #09", 
+          12, 
+          "2026-10-13 17:28:45", 
+          "1 Day", 
+          workerStandX, 
+          frontY, 
+          parentRect.width, 
+          'red', 
+          "CRITICAL: Low safety stock (10 left)! Order placed."
+        );
+        await sleep(6000); // 留出充分时间看清红色高危警报
 
-        // ---------------- 阶段 4: 送货员快速进场补货 (+90 归位到 100) ----------------
+        // ---------------- 阶段 4: 送货员快速进场补货（次日上午 10:00 准时送达，库存恢复 100，倒计时归位 14 Days） ----------------
         restocker.style.display = 'flex';
         restocker.style.transition = 'none';
         restocker.style.left = '-100px';
@@ -383,12 +391,12 @@
         await sleep(400);
         toggleDoor(false);
 
-        // 手机面板准确恢复为初始 100
+        // 手机面板全面恢复初始健康状态
         currentStock = INITIAL_STOCK;
         forecastDemand = 1200;
         stockEl.innerText = currentStock;
         forecastEl.innerText = forecastDemand.toLocaleString();
-        timerEl.innerText = "14 Days";
+        timerEl.innerText = "14 Days"; // 倒计时重回满格
 
         const restockLog = document.createElement('div');
         restockLog.className = "log-enter p-1.5 bg-emerald-50 rounded border-l-4 border-emerald-600 border border-emerald-200 flex justify-between items-center text-emerald-950 font-bold shadow-xs";
@@ -396,7 +404,7 @@
           <div>
             <div class="flex items-center space-x-1">
               <span class="font-black text-emerald-700">[RESTOCKED]</span> 
-              <span class="text-slate-500 font-semibold">${getFullTimestamp()}</span>
+              <span class="text-slate-500 font-semibold">2026-10-14 10:00:00</span>
             </div>
             <div class="text-[9px] text-emerald-800">Batch delivered to ROW 03 · SKU-11</div>
           </div>
@@ -412,7 +420,7 @@
         restocker.style.opacity = '0';
         restocker.style.display = 'none';
 
-        await sleep(2500); // 优雅留白，进入下一轮
+        await sleep(2500); // 优雅空白，进入下一自然周期
       }
     }
 
