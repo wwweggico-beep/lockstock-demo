@@ -113,10 +113,10 @@
       </div>
     </div>
 
-    <!-- 舞台动画层 (仅保留单个极简小人与送货员) -->
+    <!-- 舞台动画层 -->
     <div class="w-full h-full absolute inset-0 pointer-events-none z-10">
       
-      <!-- 极简单个蓝色员工 (初始在左外侧隐形) -->
+      <!-- 极简单个蓝色员工 -->
       <div id="single-worker" class="w-4 h-6 absolute z-20 opacity-0" style="left: -100px; top: 0;">
         <div class="w-2.5 h-2.5 bg-blue-300 mx-auto rounded-xs"></div>
         <div class="w-4 h-3.5 bg-blue-600 rounded-xs flex items-center justify-end">
@@ -293,7 +293,6 @@
 
     // 单个小人标准取货动作
     async function singleWorkerAction(user, qty, workerStandX, frontY, parentWidth, alertType = null, alertMsg = "") {
-      // 1. 初始化就位于左侧外
       worker.style.transition = 'none';
       worker.style.left = '-60px';
       worker.style.top = `${frontY}px`;
@@ -302,12 +301,12 @@
 
       await sleep(100);
 
-      // 2. 匀速入场停在 SKU-11 正下方
+      // 匀速入场停在 SKU-11 正下方
       worker.style.transition = 'left 2.6s linear';
       worker.style.left = `${workerStandX}px`;
       await sleep(2650);
 
-      // 3. 开柜门拿货
+      // 开柜门拿货
       toggleDoor(true);
       await sleep(450);
       carriedItem.style.display = 'block';
@@ -321,14 +320,14 @@
       await sleep(500);
       toggleDoor(false);
 
-      // 4. 匀速向右出画
+      // 匀速向右出画
       worker.style.transition = 'left 2.6s linear';
       worker.style.left = `${parentWidth + 40}px`;
       await sleep(2650);
       worker.style.opacity = '0';
     }
 
-    // 主无限循环 (极简、对齐、无残影)
+    // 主无限循环 (精确数值闭环)
     async function startContinuousLoop() {
       while (true) {
         // 精准几何中心计算
@@ -342,29 +341,27 @@
         const frontY = binRect.bottom + 12 - parentRect.top;
         const backY = binRect.top - 34 - parentRect.top;
 
-        // ---------------- 阶段 1: 员工 1 正常取货 ----------------
-        await singleWorkerAction("Staff #03", 8, workerStandX, frontY, parentRect.width);
-        await sleep(2000); // 舒缓间隔
+        // ---------------- 阶段 1: 第 1 个员工取走 18 个 (剩余 82) ----------------
+        await singleWorkerAction("Staff #03", 18, workerStandX, frontY, parentRect.width);
+        await sleep(2000);
 
-        // ---------------- 阶段 2: 员工 2 大批量取货 -> 橘色警告 8 秒 ----------------
-        await singleWorkerAction("Staff #07", 46, workerStandX, frontY, parentRect.width, 'orange', "ANOMALY: High usage volume detected!");
-        // 留出长达 6 秒专供看清橘色呼吸灯和倒计时
-        await sleep(6000);
+        // ---------------- 阶段 2: 第 2 个员工取走 60 个 (剩余 22) -> 橘色警告 8 秒 ----------------
+        await singleWorkerAction("Staff #07", 60, workerStandX, frontY, parentRect.width, 'orange', "ANOMALY: High usage volume detected!");
+        await sleep(6000); // 预留看清呼吸灯与倒计时
 
-        // ---------------- 阶段 3: 员工 3 取光库存 -> 红色警告 8 秒 ----------------
-        await singleWorkerAction("Staff #09", 36, workerStandX, frontY, parentRect.width, 'red', "CRITICAL: Low safety stock! Order placed.");
-        // 留出长达 6 秒看清红色呼吸灯紧急报警
-        await sleep(6000);
+        // ---------------- 阶段 3: 第 3 个员工取走 12 个 (剩余 10，见底触发补货) -> 红色警告 8 秒 ----------------
+        await singleWorkerAction("Staff #09", 12, workerStandX, frontY, parentRect.width, 'red', "CRITICAL: Low safety stock (10 left)! Order placed.");
+        await sleep(6000); // 预留看清红色高危警报
 
-        // ---------------- 阶段 4: 送货员背面通道沉稳快速进场 ----------------
-        restocker.style.display = 'flex'; // 开始动画时才显示，彻底杜绝左上角残影
+        // ---------------- 阶段 4: 送货员快速进场补货 (+90 归位到 100) ----------------
+        restocker.style.display = 'flex';
         restocker.style.transition = 'none';
         restocker.style.left = '-100px';
         restocker.style.top = `${backY}px`;
         restocker.style.opacity = '1';
         await sleep(50);
 
-        // 提速推车 (2.8 秒平稳到位)
+        // 快速到位 (2.8 秒)
         restocker.style.transition = 'left 2.8s ease-in-out';
         restocker.style.left = `${restockerStandX}px`;
         await sleep(2850);
@@ -386,7 +383,7 @@
         await sleep(400);
         toggleDoor(false);
 
-        // 手机面板重置
+        // 手机面板准确恢复为初始 100
         currentStock = INITIAL_STOCK;
         forecastDemand = 1200;
         stockEl.innerText = currentStock;
@@ -407,15 +404,15 @@
         `;
         logList.prepend(restockLog);
 
-        // 提速离开 (2.8 秒移出画卷)
+        // 快速离场
         restocker.style.transition = 'left 2.8s ease-in';
         restocker.style.left = `${parentRect.width + 50}px`;
         await sleep(2900);
         
         restocker.style.opacity = '0';
-        restocker.style.display = 'none'; // 离开后再次彻底隐藏
+        restocker.style.display = 'none';
 
-        await sleep(2500); // 间隔后进入全新一轮
+        await sleep(2500); // 优雅留白，进入下一轮
       }
     }
 
