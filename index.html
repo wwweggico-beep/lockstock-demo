@@ -143,3 +143,332 @@
       <div id="restocker-sprite" class="absolute flex items-end space-x-1 opacity-0 z-20" style="left: -90px; top: 250px;">
         <div class="w-4 h-6">
           <div class="w-2.5 h-2.5 bg-amber-200 mx-auto rounded-xs"></div>
+          <div class="w-4 h-3.5 bg-amber-500 rounded-xs"></div>
+        </div>
+        <div class="w-8 h-5 bg-amber-700 border border-amber-900 rounded-xs flex items-center justify-center">
+          <div class="w-3 h-2 bg-amber-300 border border-amber-600"></div>
+        </div>
+      </div>
+
+      <!-- 补货抛入小道具 -->
+      <div id="toss-box" class="w-2 h-2 bg-amber-400 border border-black absolute opacity-0 z-30 transition-all duration-500"></div>
+    </div>
+
+    <div></div>
+  </div>
+
+  <!-- ================= RIGHT: 手机界面 ================= -->
+  <div class="w-[35%] h-full flex items-center justify-center p-4 bg-slate-100 shrink-0">
+    
+    <div id="phone-case" class="w-[320px] h-[580px] bg-white border-4 border-slate-300 rounded-[38px] p-3.5 flex flex-col justify-between shadow-2xl relative transition-all duration-300">
+      
+      <div class="w-20 h-3 bg-slate-200 rounded-full mx-auto mb-1.5 shrink-0"></div>
+
+      <!-- APP Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-1.5 shrink-0">
+        <div class="flex items-center space-x-1.5">
+          <div class="w-2.5 h-2.5 rounded bg-indigo-600 flex items-center justify-center text-[7px] text-white font-black">L</div>
+          <span class="text-xs font-black tracking-wider text-slate-900 font-mono">LOCKSTOCK-APP</span>
+        </div>
+        <span class="text-[8px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">ONLINE</span>
+      </div>
+
+      <!-- 看板面板 -->
+      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-1.5 shrink-0 shadow-sm">
+        <div class="text-[8px] uppercase font-mono tracking-wider text-slate-600 mb-1 font-bold">Inventory Status</div>
+        
+        <div class="grid grid-cols-2 gap-1.5 text-center">
+          <div class="bg-white p-1.5 rounded border border-slate-200">
+            <span class="text-[9px] text-slate-500 uppercase block font-bold">In Stock</span>
+            <span id="stock-val" class="text-lg font-mono font-black text-slate-900">100</span>
+          </div>
+          
+          <div class="bg-white p-1.5 rounded border border-slate-200 flex flex-col justify-between">
+            <div class="flex justify-between items-center px-0.5">
+              <span class="text-[9px] text-slate-500 uppercase font-bold">Forecast/Mo</span>
+              <svg class="w-6 h-2.5 text-indigo-600" viewBox="0 0 32 12" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M0 10 L8 8 L16 9 L24 4 L32 2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span id="forecast-val" class="text-lg font-mono font-black text-indigo-700 text-center">1,200</span>
+          </div>
+        </div>
+
+        <div class="mt-2 text-[9px] flex justify-between items-center text-slate-700 px-1 font-mono font-bold">
+          <span>Auto-Restock ETA:</span>
+          <span id="timer-val" class="text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">14 Days</span>
+        </div>
+      </div>
+
+      <!-- 动态警告展示区 -->
+      <div id="alert-box" class="h-8 mb-1.5 flex items-center justify-center shrink-0"></div>
+
+      <!-- 实时存取记录 (日期 + 具体时分秒) -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <span class="text-[9px] uppercase tracking-wider font-mono text-slate-700 mb-1 font-bold shrink-0">Activity Stream</span>
+        <div id="log-list" class="flex-1 bg-slate-50 rounded-xl p-2 overflow-y-auto no-scrollbar space-y-1.5 border border-slate-200 text-[10px] font-mono">
+          <div class="p-1.5 bg-white rounded border border-slate-200 flex justify-between items-center text-slate-600">
+            <span class="font-bold text-indigo-600">INIT</span>
+            <span>2026-10-01 08:30:00 · READY</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= 纯原生高精准导航驱动 ================= -->
+  <script>
+    const INITIAL_STOCK = 100;
+    let currentStock = INITIAL_STOCK;
+    let forecastDemand = 1200;
+    let dayCount = 2;
+    let hourCount = 9;
+    let minCount = 12;
+
+    const stockEl = document.getElementById('stock-val');
+    const forecastEl = document.getElementById('forecast-val');
+    const timerEl = document.getElementById('timer-val');
+    const logList = document.getElementById('log-list');
+    const alertBox = document.getElementById('alert-box');
+    const phoneCase = document.getElementById('phone-case');
+    const targetBin = document.getElementById('target-bin');
+    const worker1 = document.getElementById('worker-1');
+    const worker2 = document.getElementById('worker-2');
+    const restocker = document.getElementById('restocker-sprite');
+    const tossBox = document.getElementById('toss-box');
+
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // 生成完整日期 + 动态时分秒
+    function getFullTimestamp() {
+      const d = dayCount < 10 ? `0${dayCount}` : `${dayCount}`;
+      const h = hourCount < 10 ? `0${hourCount}` : `${hourCount}`;
+      const m = minCount < 10 ? `0${minCount}` : `${minCount}`;
+      const s = Math.floor(Math.random() * 40 + 10);
+      
+      minCount += 18;
+      if (minCount >= 60) {
+        minCount -= 60;
+        hourCount += 1;
+      }
+      if (hourCount >= 18) {
+        hourCount = 9;
+        dayCount += 1;
+      }
+      return `2026-10-${d} ${h}:${m}:${s}`;
+    }
+
+    // 写日志 (使用 item-XYZ01)
+    function writeLog(user, sku, item, qty) {
+      currentStock -= qty;
+      forecastDemand += (qty * 4);
+      stockEl.innerText = currentStock;
+      forecastEl.innerText = forecastDemand.toLocaleString();
+
+      const itemEl = document.createElement('div');
+      itemEl.className = "log-enter p-1.5 bg-white rounded border-l-4 border-indigo-600 border border-slate-300 flex justify-between items-center text-slate-900 shadow-xs";
+      itemEl.innerHTML = `
+        <div>
+          <div class="flex items-center space-x-1">
+            <span class="text-indigo-700 font-black">[${user}]</span> 
+            <span class="text-slate-500 font-semibold">${getFullTimestamp()}</span>
+          </div>
+          <div class="text-[9px] text-slate-700 font-bold">${sku} · ${item}</div>
+        </div>
+        <span class="text-red-600 font-mono font-black text-xs">-${qty}</span>
+      `;
+      logList.prepend(itemEl);
+    }
+
+    function triggerAlert(msg, type = 'orange') {
+      phoneCase.classList.remove('alert-glow-orange', 'alert-glow-red');
+      const isRed = type === 'red';
+      phoneCase.classList.add(isRed ? 'alert-glow-red' : 'alert-glow-orange');
+
+      const styleClass = isRed 
+        ? 'bg-red-100 text-red-950 border-red-400' 
+        : 'bg-amber-100 text-amber-950 border-amber-400';
+
+      alertBox.innerHTML = `
+        <div class="w-full text-[9px] font-black py-1 px-2 rounded border ${styleClass} flex items-center justify-between shadow">
+          <span>⚠️ ${msg}</span>
+        </div>
+      `;
+
+      setTimeout(() => {
+        alertBox.innerHTML = '';
+        phoneCase.classList.remove('alert-glow-orange', 'alert-glow-red');
+      }, 4500);
+    }
+
+    function toggleDoor(open = true) {
+      if (open) targetBin.classList.add('door-open');
+      else targetBin.classList.remove('door-open');
+    }
+
+    // 绝对不穿模的两段式走廊路线：
+    // 起点 (40px, 85%) -> 先直走到过道入口 (40px, 250px) -> 再水平走进 ROW 03 走廊 (53%, 250px)
+    async function moveAlongAisle(el, toStand = true) {
+      if (toStand) {
+        // 第一段：从排队区垂直上行到过道口
+        el.style.transition = 'top 1.4s ease-in-out';
+        el.style.top = '250px';
+        await sleep(1450);
+
+        // 第二段：水平直角拐进过道
+        el.style.transition = 'left 2.2s ease-in-out';
+        el.style.left = '53%';
+        await sleep(2250);
+      } else {
+        // 顺着走廊向右水平直接走出版面
+        el.style.transform = 'scaleX(-1)';
+        el.style.transition = 'left 2.5s ease-in';
+        el.style.left = '105%';
+        await sleep(2550);
+      }
+    }
+
+    // 重置小人状态
+    function resetWorker(el) {
+      el.style.transition = 'none';
+      el.style.left = '40px';
+      el.style.top = '85%';
+      el.style.transform = 'scaleX(1)';
+      el.querySelector('.item-hand').style.display = 'none';
+      el.style.opacity = '1';
+    }
+
+    // 主无限循环（前后脚多小人接力流水线）
+    async function startContinuousLoop() {
+      while (true) {
+        // ---------------- 阶段 1: 小人1 和 小人2 前后脚接力 ----------------
+        resetWorker(worker1);
+        // 小人 1 出发走向柜子
+        const p1Move = moveAlongAisle(worker1, true);
+
+        // 小人 1 刚拐进过道，小人 2 立即接续从排队区跟上（形成前后脚流动感）
+        await sleep(1500);
+        resetWorker(worker2);
+        // 小人 2 紧跟走到过道中间等待接力
+        worker2.style.transition = 'top 1.4s ease-in-out, left 1.8s ease-in-out';
+        worker2.style.top = '250px';
+        worker2.style.left = '32%';
+
+        await p1Move; // 等待小人 1 到达柜前
+
+        // 小人 1 柜前开门拿货
+        toggleDoor(true);
+        await sleep(350);
+        worker1.querySelector('.item-hand').style.display = 'block';
+        writeLog("Staff #03", "SKU-11", "item-XYZ01", 6);
+        await sleep(300);
+        toggleDoor(false);
+
+        // 小人 1 离开，同时小人 2 顺势推进到柜前！
+        const p1Leave = moveAlongAisle(worker1, false);
+        await sleep(300);
+        
+        worker2.style.transition = 'left 1.8s ease-in-out';
+        worker2.style.left = '53%';
+        await sleep(1850);
+
+        // 小人 2 拿大批量物品（触发橘黄色警报）
+        toggleDoor(true);
+        await sleep(350);
+        worker2.querySelector('.item-hand').style.display = 'block';
+        writeLog("Staff #07", "SKU-11", "item-XYZ01", 46);
+        triggerAlert("ANOMALY: High usage volume detected!", "orange");
+        timerEl.innerText = "6 Days";
+        await sleep(300);
+        toggleDoor(false);
+
+        // 小人 2 离开
+        await moveAlongAisle(worker2, false);
+        await p1Leave;
+        worker1.style.opacity = '0';
+        worker2.style.opacity = '0';
+
+        await sleep(400);
+
+        // ---------------- 阶段 2: 小人 1 再次拿取，库存见底触发红色高危警报 ----------------
+        resetWorker(worker1);
+        await moveAlongAisle(worker1, true);
+        toggleDoor(true);
+        await sleep(350);
+        worker1.querySelector('.item-hand').style.display = 'block';
+        writeLog("Staff #09", "SKU-11", "item-XYZ01", 38);
+        triggerAlert("CRITICAL: Low safety stock! Order placed.", "red");
+        timerEl.innerText = "1 Day";
+        await sleep(300);
+        toggleDoor(false);
+        await moveAlongAisle(worker1, false);
+        worker1.style.opacity = '0';
+
+        await sleep(500);
+
+        // ---------------- 阶段 3: 补货专员沿过道慢慢推车进场 ----------------
+        restocker.style.transition = 'none';
+        restocker.style.left = '-90px';
+        restocker.style.top = '250px';
+        restocker.style.opacity = '1';
+        await sleep(50);
+
+        restocker.style.transition = 'left 3.8s ease-in-out';
+        restocker.style.left = '45%';
+        await sleep(3900);
+
+        toggleDoor(true);
+        await sleep(300);
+
+        // 货物飞入
+        tossBox.style.transition = 'none';
+        tossBox.style.left = '48%';
+        tossBox.style.top = '260px';
+        tossBox.style.opacity = '1';
+        await sleep(50);
+
+        tossBox.style.transition = 'all 0.6s ease-out';
+        tossBox.style.left = '53%';
+        tossBox.style.top = '225px';
+        await sleep(650);
+        tossBox.style.opacity = '0';
+        await sleep(600);
+        toggleDoor(false);
+
+        // 手机面板重置
+        currentStock = INITIAL_STOCK;
+        forecastDemand = 1200;
+        stockEl.innerText = currentStock;
+        forecastEl.innerText = forecastDemand.toLocaleString();
+        timerEl.innerText = "14 Days";
+
+        const restockLog = document.createElement('div');
+        restockLog.className = "log-enter p-1.5 bg-emerald-50 rounded border-l-4 border-emerald-600 border border-emerald-200 flex justify-between items-center text-emerald-950 font-bold shadow-xs";
+        restockLog.innerHTML = `
+          <div>
+            <div class="flex items-center space-x-1">
+              <span class="font-black text-emerald-700">[RESTOCKED]</span> 
+              <span class="text-slate-500 font-semibold">${getFullTimestamp()}</span>
+            </div>
+            <div class="text-[9px] text-emerald-800">Batch delivered to ROW 03 · SKU-11</div>
+          </div>
+          <span class="text-emerald-700 font-black">+90</span>
+        `;
+        logList.prepend(restockLog);
+
+        // 慢速推车离开
+        restocker.style.transition = 'left 3.8s ease-in';
+        restocker.style.left = '105%';
+        await sleep(4000);
+        restocker.style.opacity = '0';
+        await sleep(1200);
+      }
+    }
+
+    window.addEventListener('load', () => {
+      startContinuousLoop();
+    });
+  </script>
+</body>
+</html>
