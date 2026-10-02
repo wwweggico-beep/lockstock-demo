@@ -10,11 +10,11 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* 像素小人基础样式 */
+    /* 像素小人造型 */
     .pixel-man {
       width: 14px;
       height: 24px;
-      position: relative;
+      position: absolute;
     }
     .pixel-head {
       width: 10px;
@@ -35,30 +35,39 @@
     }
     .locker-door {
       transform-origin: left center;
-      transition: transform 0.4s ease, background-color 0.3s;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
     }
     .door-open {
       transform: rotateY(-75deg);
-      background-color: #6ee7b7 !important; /* 柜内绿光 */
+      background-color: #34d399 !important; /* 柜内绿光 */
     }
 
-    /* 橘黄色报警呼吸灯效果 */
+    /* 手机呼吸灯效果：橘光 & 红光 */
     @keyframes orangeGlow {
       0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2), inset 0 0 10px rgba(245, 158, 11, 0.2); }
       50% { box-shadow: 0 0 35px rgba(245, 158, 11, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.5); }
     }
-    .alert-active {
+    .alert-glow-orange {
       animation: orangeGlow 1.2s infinite ease-in-out;
       border-color: #f59e0b !important;
     }
 
-    /* 手机流水滑入动效 */
+    @keyframes redGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3), inset 0 0 10px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.9), inset 0 0 25px rgba(239, 68, 68, 0.6); }
+    }
+    .alert-glow-red {
+      animation: redGlow 1.2s infinite ease-in-out;
+      border-color: #ef4444 !important;
+    }
+
+    /* 手机日志平滑进入 */
     @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-10px); }
+      from { opacity: 0; transform: translateY(-8px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .log-enter {
-      animation: slideIn 0.35s ease-out forwards;
+      animation: slideIn 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
     }
   </style>
 </head>
@@ -73,86 +82,112 @@
       <p class="text-xs text-slate-600 font-medium">Founders: Marie Avdonina &amp; Zhe Hao</p>
     </div>
 
-    <!-- 库房场景：3排横向智能柜 (矩阵排布) -->
-    <div class="absolute top-20 left-1/2 -translate-x-1/2 flex flex-col space-y-3 z-10 scale-90 md:scale-100">
+    <!-- 库房场景：5排横向智能柜 (矩阵排布，留出通透走廊) -->
+    <div id="warehouse-grid" class="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col space-y-4 z-10 scale-90 md:scale-95">
+      
       <!-- 柜排 1 -->
-      <div class="flex items-center space-x-1.5 bg-slate-300/60 p-1.5 rounded-lg border border-slate-400">
-        <span class="text-[9px] font-mono font-bold text-slate-500 w-8">ROW 1</span>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-01</div>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-02</div>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-03</div>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-04</div>
+      <div class="flex items-center space-x-1.5 bg-slate-300/70 p-1.5 rounded-lg border border-slate-400">
+        <div class="w-16 text-center"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[9px] font-mono font-bold text-slate-700">ROW 01</div></div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-01</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-02</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-03</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-04</div>
       </div>
 
-      <!-- 柜排 2 (主要互动目标柜: LOCKSTOCK-AI) -->
-      <div class="flex items-center space-x-1.5 bg-indigo-50/80 p-2 rounded-lg border-2 border-indigo-500 shadow-md">
-        <span class="text-[9px] font-mono font-black text-indigo-700 w-8">LOCK-AI</span>
-        <div class="w-12 h-9 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-1</div>
-        <div class="w-12 h-9 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-2</div>
+      <!-- 柜排 2 -->
+      <div class="flex items-center space-x-1.5 bg-slate-300/70 p-1.5 rounded-lg border border-slate-400">
+        <div class="w-16 text-center"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[9px] font-mono font-bold text-slate-700">ROW 02</div></div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-05</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-06</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-07</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-08</div>
+      </div>
+
+      <!-- 柜排 3 (主要互动目标柜) -->
+      <div id="main-row" class="flex items-center space-x-1.5 bg-indigo-50/90 p-1.5 rounded-lg border-2 border-indigo-500 shadow-md">
+        <div class="w-16 text-center"><div class="text-[7px] text-indigo-500 font-black">LOCKSTOCK</div><div class="text-[9px] font-mono font-black text-indigo-700">ROW 03</div></div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-09</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-10</div>
         
-        <!-- 活动互动格口 (具备3D开门功能) -->
-        <div class="perspective-box w-12 h-9">
+        <!-- 活动互动格口 (正面面对下方操作区) -->
+        <div class="perspective-box w-12 h-7">
           <div id="target-bin" class="locker-door w-full h-full bg-indigo-600 text-white rounded text-[9px] font-mono font-bold flex items-center justify-center shadow">
-            SKU-3
+            SKU-11
           </div>
         </div>
 
-        <div class="w-12 h-9 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-4</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-12</div>
       </div>
 
-      <!-- 柜排 3 -->
-      <div class="flex items-center space-x-1.5 bg-slate-300/60 p-1.5 rounded-lg border border-slate-400">
-        <span class="text-[9px] font-mono font-bold text-slate-500 w-8">ROW 3</span>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-05</div>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-06</div>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-07</div>
-        <div class="w-12 h-8 bg-white border border-slate-400 rounded text-[9px] font-mono flex items-center justify-center">SKU-08</div>
+      <!-- 柜排 4 -->
+      <div class="flex items-center space-x-1.5 bg-slate-300/70 p-1.5 rounded-lg border border-slate-400">
+        <div class="w-16 text-center"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[9px] font-mono font-bold text-slate-700">ROW 04</div></div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-13</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-14</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-15</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-16</div>
+      </div>
+
+      <!-- 柜排 5 -->
+      <div class="flex items-center space-x-1.5 bg-slate-300/70 p-1.5 rounded-lg border border-slate-400">
+        <div class="w-16 text-center"><div class="text-[7px] text-slate-500 font-bold">LOCKSTOCK</div><div class="text-[9px] font-mono font-bold text-slate-700">ROW 05</div></div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-17</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-18</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-19</div>
+        <div class="w-12 h-7 bg-white border border-slate-300 rounded text-[9px] font-mono flex items-center justify-center">SKU-20</div>
       </div>
     </div>
 
-    <!-- 舞台元素层 (绝对定位，供动画小人行走) -->
-    <div id="stage-layer" class="w-full h-full absolute inset-0 pointer-events-none">
-      <!-- 10个纵向排队的员工（在左侧下方排开） -->
-      <div id="worker-queue" class="absolute bottom-6 left-12 flex flex-col-reverse space-y-reverse space-y-2">
-        <!-- 动态生成 10 个蓝色像素小人 -->
+    <!-- 舞台动画层 (绝不穿透柜子，沿走廊平滑移动) -->
+    <div id="stage-layer" class="w-full h-full absolute inset-0 pointer-events-none z-10">
+      
+      <!-- 队伍常驻区：左下方排队的队伍 -->
+      <div id="static-queue" class="absolute bottom-8 left-10 flex flex-col space-y-2.5">
+        <!-- 保持排队队列视觉填充 -->
       </div>
 
-      <!-- 正在取货的员工操作位占位 -->
-      <div id="active-worker" class="pixel-man absolute opacity-0 z-20">
+      <!-- 移动小人 1 -->
+      <div id="worker-1" class="pixel-man opacity-0">
         <div class="pixel-head bg-blue-300"></div>
         <div class="pixel-body bg-blue-600 flex items-center justify-end">
-          <!-- 手中拿的零件小方块 -->
-          <div id="item-in-hand" class="w-2 h-2 bg-amber-400 border border-black hidden mr-[-4px]"></div>
+          <div class="item-hand w-2 h-2 bg-amber-400 border border-black hidden mr-[-3px]"></div>
         </div>
       </div>
 
-      <!-- 补货员小车群组 (初始在柜子后方左侧隐藏) -->
-      <div id="restocker-unit" class="absolute top-12 -left-28 flex items-end space-x-1 z-0">
-        <!-- 橙色像素补货员 -->
-        <div class="pixel-man">
+      <!-- 移动小人 2 (流水线前后呼应) -->
+      <div id="worker-2" class="pixel-man opacity-0">
+        <div class="pixel-head bg-blue-300"></div>
+        <div class="pixel-body bg-blue-600 flex items-center justify-end">
+          <div class="item-hand w-2 h-2 bg-amber-400 border border-black hidden mr-[-3px]"></div>
+        </div>
+      </div>
+
+      <!-- 补货专员 + 推车组 (速度沉稳，沿走廊进出) -->
+      <div id="restocker-unit" class="absolute flex items-end space-x-1.5 opacity-0 z-10">
+        <div class="pixel-man relative">
           <div class="pixel-head bg-amber-200"></div>
           <div class="pixel-body bg-amber-500"></div>
         </div>
-        <!-- 推车与箱子 -->
-        <div class="w-8 h-5 bg-amber-700 border border-amber-900 rounded-sm flex items-center justify-center">
-          <div class="w-3 h-2 bg-amber-300 border border-amber-600"></div>
+        <div class="w-9 h-6 bg-amber-700 border border-amber-900 rounded-sm flex items-center justify-center">
+          <div class="w-3.5 h-2.5 bg-amber-300 border border-amber-600"></div>
         </div>
       </div>
-      
-      <!-- 补货飞行小方块道具 -->
+
+      <!-- 补货小方块抛物线道具 -->
       <div id="flying-box" class="w-2.5 h-2.5 bg-amber-400 border border-black absolute opacity-0 z-30"></div>
     </div>
 
-    <div class="text-[10px] text-slate-500 font-mono tracking-wider z-20">WAREHOUSE LIVE MAP · SECTOR 02</div>
+    <!-- 底部占位（无文字，保持干净） -->
+    <div></div>
   </div>
 
   <!-- ================= RIGHT: Mobile App Interface ================= -->
   <div class="w-full md:w-2/5 h-1/2 md:h-full flex items-center justify-center p-4 bg-slate-100">
     
-    <!-- 手机外框（增加呼吸灯过渡动画） -->
+    <!-- 手机外框 -->
     <div id="phone-case" class="w-[340px] h-[610px] bg-white border-4 border-slate-300 rounded-[40px] p-4 flex flex-col justify-between shadow-2xl relative transition-all duration-300">
       
-      <!-- 灵动岛听筒 -->
+      <!-- 听筒/灵动岛 -->
       <div class="w-24 h-3.5 bg-slate-200 rounded-full mx-auto mb-2 shrink-0"></div>
 
       <!-- APP Header: Logo + 状态 -->
@@ -161,25 +196,23 @@
           <div class="w-3 h-3 rounded bg-indigo-600 flex items-center justify-center text-[8px] text-white font-black">L</div>
           <span class="text-xs font-black tracking-wider text-slate-900 font-mono">LOCKSTOCK-APP</span>
         </div>
-        <span class="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">CONNECTED</span>
+        <span class="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">ONLINE</span>
       </div>
 
-      <!-- 实时监控看板 -->
+      <!-- 监控状态面板 -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-2 shrink-0 shadow-sm">
         <div class="text-[9px] uppercase font-mono tracking-wider text-slate-600 mb-1.5 font-bold">Inventory Overview</div>
         
         <div class="grid grid-cols-2 gap-2 text-center">
-          <!-- 剩余库存 -->
           <div class="bg-white p-2 rounded-lg border border-slate-200">
             <span class="text-[10px] text-slate-600 uppercase block font-bold">In Stock</span>
             <span id="stock-val" class="text-xl font-mono font-black text-slate-900">100</span>
           </div>
           
-          <!-- 月度预测 + 折线趋势图 -->
           <div class="bg-white p-2 rounded-lg border border-slate-200 flex flex-col justify-between">
             <div class="flex justify-between items-center">
               <span class="text-[10px] text-slate-600 uppercase font-bold">Forecast / Mo</span>
-              <!-- 微型折线趋势图 SVG -->
+              <!-- 微型折线趋势图 -->
               <svg class="w-8 h-3 text-indigo-600" viewBox="0 0 32 12" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M0 10 L8 8 L16 9 L24 4 L32 2" stroke-linecap="round"/>
               </svg>
@@ -188,26 +221,25 @@
           </div>
         </div>
 
-        <!-- 补货倒计时：按天数展示 -->
+        <!-- 补货倒计时：仅展示天数 -->
         <div class="mt-2.5 text-[10px] flex justify-between items-center text-slate-700 px-1 font-mono font-bold">
           <span>Auto-Restock ETA:</span>
-          <span id="timer-val" class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">14 Days 08 Hrs</span>
+          <span id="timer-val" class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">14 Days</span>
         </div>
       </div>
 
-      <!-- 动态警告展示区 (停留时间已拉长，字号更深) -->
+      <!-- 动态警告展示区 (停留时间长，大字号) -->
       <div id="alert-box" class="h-9 mb-2 flex items-center justify-center shrink-0">
-        <!-- JS 动态注入 -->
+        <!-- 弹窗将由 JS 动态插入 -->
       </div>
 
-      <!-- 实时流水日志 -->
+      <!-- 实时存取记录 (带递增日期显示) -->
       <div class="flex-1 flex flex-col min-h-0">
         <span class="text-[10px] uppercase tracking-wider font-mono text-slate-700 mb-1 font-bold shrink-0">Activity Stream</span>
         <div id="log-list" class="flex-1 bg-slate-50 rounded-xl p-2.5 overflow-y-auto no-scrollbar space-y-2 border border-slate-200 text-[10px] font-mono">
-          <!-- 初始状态 -->
-          <div class="p-2 bg-white rounded border border-slate-200 flex justify-between items-center text-slate-700">
-            <span class="font-bold text-indigo-600">SYSTEM</span>
-            <span>HUB READY · MONITORING ACTIVE</span>
+          <div class="p-2 bg-white rounded border border-slate-200 flex justify-between items-center text-slate-600">
+            <span class="font-bold text-indigo-600">SYSTEM INIT</span>
+            <span>2026-10-01 · READY</span>
           </div>
         </div>
       </div>
@@ -215,26 +247,24 @@
     </div>
   </div>
 
-  <!-- ================= ANIMATION LOGIC SCRIPT ================= -->
+  <!-- ================= 精密工业仿真与联动引擎 ================= -->
   <script>
-    // 1. 初始化 10 个纵向排队的像素小人
-    const queueContainer = document.getElementById('worker-queue');
-    for (let i = 0; i < 10; i++) {
-      const p = document.createElement('div');
-      p.className = 'pixel-man';
-      p.id = `queue-person-${i}`;
-      p.innerHTML = `
-        <div class="pixel-head bg-blue-300"></div>
-        <div class="pixel-body bg-blue-600"></div>
+    // 渲染常驻排队队伍（左下方）
+    const staticQueue = document.getElementById('static-queue');
+    for (let i = 0; i < 7; i++) {
+      const q = document.createElement('div');
+      q.className = 'w-3.5 h-6 relative';
+      q.innerHTML = `
+        <div class="w-2.5 h-2.5 bg-blue-300 rounded-xs mx-auto"></div>
+        <div class="w-3.5 h-3.5 bg-blue-600 rounded-t-xs"></div>
       `;
-      queueContainer.appendChild(p);
+      staticQueue.appendChild(q);
     }
 
-    // 核心状态数据
     const INITIAL_STOCK = 100;
     let currentStock = INITIAL_STOCK;
     let forecastDemand = 1200;
-    let daysRemaining = 14;
+    let dayCount = 2; // 日期从 2026-10-02 递增
 
     const stockEl = document.getElementById('stock-val');
     const forecastEl = document.getElementById('forecast-val');
@@ -243,19 +273,22 @@
     const alertBox = document.getElementById('alert-box');
     const phoneCase = document.getElementById('phone-case');
     const targetBin = document.getElementById('target-bin');
-    const activeWorker = document.getElementById('active-worker');
-    const itemInHand = document.getElementById('item-in-hand');
+    const worker1 = document.getElementById('worker-1');
+    const worker2 = document.getElementById('worker-2');
+    const restockerUnit = document.getElementById('restocker-unit');
     const flyingBox = document.getElementById('flying-box');
 
-    function getTimestamp() {
-      const d = new Date();
-      return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+    // 日期生成器
+    function getNextDate() {
+      const dayStr = dayCount < 10 ? `0${dayCount}` : `${dayCount}`;
+      dayCount += 2;
+      return `2026-10-${dayStr}`;
     }
 
-    // APP 写日志
-    function recordLog(user, sku, item, qty) {
+    // 写入手机日志
+    function writeLog(user, sku, item, qty) {
       currentStock -= qty;
-      forecastDemand += (qty * 5);
+      forecastDemand += (qty * 4);
       stockEl.innerText = currentStock;
       forecastEl.innerText = forecastDemand.toLocaleString();
 
@@ -263,8 +296,10 @@
       itemEl.className = "log-enter p-2 bg-white rounded border-l-4 border-indigo-600 border border-slate-300 flex justify-between items-center text-slate-900 shadow-sm";
       itemEl.innerHTML = `
         <div>
-          <span class="text-indigo-700 font-black">[${user}]</span> 
-          <span class="text-slate-500">${getTimestamp()}</span>
+          <div class="flex items-center space-x-1.5">
+            <span class="text-indigo-700 font-black">[${user}]</span> 
+            <span class="text-slate-500 font-semibold">${getNextDate()}</span>
+          </div>
           <div class="text-[9px] text-slate-700 font-bold">${sku} · ${item}</div>
         </div>
         <span class="text-red-600 font-mono font-black text-xs">-${qty}</span>
@@ -272,146 +307,62 @@
       logList.prepend(itemEl);
     }
 
-    // 警告弹窗（延长至4.5秒，并触发手机橘色呼吸光）
-    function triggerAlert(msg, type = 'warn') {
-      phoneCase.classList.add('alert-active');
+    // 双色呼吸灯警报触发（停留4.5秒）
+    function triggerAlert(msg, type = 'orange') {
+      phoneCase.classList.remove('alert-glow-orange', 'alert-glow-red');
+      
+      const isRed = type === 'red';
+      phoneCase.classList.add(isRed ? 'alert-glow-red' : 'alert-glow-orange');
+
+      const styleClass = isRed 
+        ? 'bg-red-100 text-red-950 border-red-400' 
+        : 'bg-amber-100 text-amber-950 border-amber-400';
+
       alertBox.innerHTML = `
-        <div class="w-full text-[9px] font-bold py-1.5 px-2 rounded border bg-amber-100 text-amber-900 border-amber-400 flex items-center justify-between shadow">
+        <div class="w-full text-[9px] font-black py-1.5 px-2 rounded border ${styleClass} flex items-center justify-between shadow">
           <span>⚠️ ${msg}</span>
         </div>
       `;
+
       setTimeout(() => {
         alertBox.innerHTML = '';
-        phoneCase.classList.remove('alert-active');
+        phoneCase.classList.remove('alert-glow-orange', 'alert-glow-red');
       }, 4500);
     }
 
-    // 柜门 3D 打开 / 关闭
-    function toggleLockerDoor(open = true) {
-      if (open) {
-        targetBin.classList.add('door-open');
-      } else {
-        targetBin.classList.remove('door-open');
-      }
+    // 开/关 3D 柜门
+    function toggleDoor(open = true) {
+      if (open) targetBin.classList.add('door-open');
+      else targetBin.classList.remove('door-open');
     }
 
-    // 主业务时间轴循环
-    function runSimulation() {
-      const masterTl = gsap.timeline({ repeat: -1 });
+    // 主调度时间轴：无颠簸、走廊过道路径规划、沉稳平滑
+    function startMasterPipeline() {
+      // 获取第3排柜子的真实屏幕位置，确保正面面对下方
+      const rect = targetBin.getBoundingClientRect();
+      const targetX = rect.left + rect.width / 2 - 7;
+      const targetY = rect.bottom + 12; // 正好停在柜子正下方的走廊上！
 
-      // 单个小人流程驱动函数
-      function takeItemSequence(empName, qty, isAnomaly = false, isCritical = false) {
-        const tl = gsap.timeline();
+      const tl = gsap.timeline({ repeat: -1 });
 
-        // 1. 小人从队列头部走到柜子前 (平滑波浪起伏行走)
-        tl.set(activeWorker, { x: 50, y: window.innerHeight * 0.35, opacity: 1, scaleX: 1 })
-          .set(itemInHand, { display: 'none' })
-          .to(activeWorker, {
-            x: window.innerWidth * 0.28,
-            y: 110,
-            duration: 1.8,
-            ease: "power1.inOut",
-            onUpdate: function() {
-              // 行走轻微上下颠簸
-              activeWorker.style.transform += ` translateY(${Math.sin(this.progress() * 20) * 2}px)`;
-            }
-          })
-          // 2. 柜门 3D 弹开
-          .call(() => toggleLockerDoor(true))
-          .to({}, { duration: 0.3 })
-          // 3. 物品拿到手上
-          .call(() => {
-            itemInHand.style.display = 'block';
-            recordLog(empName, "SKU-3", "Tungsten Bit", qty);
+      // ================= 环节 1：小人1 稳步走入走廊取货 =================
+      tl.set(worker1, { x: 45, y: targetY + 120, opacity: 1, scaleX: 1 })
+        .set(worker1.querySelector('.item-hand'), { display: 'none' })
+        // 沿走廊平滑移动，无抖动
+        .to(worker1, { x: targetX, y: targetY, duration: 2.8, ease: "power1.inOut" })
+        .call(() => toggleDoor(true))
+        .to({}, { duration: 0.4 })
+        // 取走物品
+        .call(() => {
+          worker1.querySelector('.item-hand').style.display = 'block';
+          writeLog("Staff #03", "SKU-11", "Precision Bit", 8);
+        })
+        .call(() => toggleDoor(false))
+        .to({}, { duration: 0.3 })
+        // 转身向右沿走廊离开
+        .set(worker1, { scaleX: -1 })
+        .to(worker1, { x: window.innerWidth * 0.58, duration: 2.6, ease: "power1.in" }, "step1-leave")
+        .set(worker1, { opacity: 0 });
 
-            if (isAnomaly) {
-              triggerAlert("ANOMALY: High withdrawal detected!", "warn");
-              daysRemaining = 6;
-              timerEl.innerText = `${daysRemaining} Days 12 Hrs`;
-            }
-            if (isCritical) {
-              triggerAlert("CRITICAL: Low safety stock! Order placed.", "warn");
-              daysRemaining = 1;
-              timerEl.innerText = `${daysRemaining} Day 02 Hrs`;
-            }
-          })
-          // 4. 柜门关闭
-          .call(() => toggleLockerDoor(false))
-          .to({}, { duration: 0.2 })
-          // 5. 小人转身（scaleX 反转）并向右平滑走出窗口
-          .set(activeWorker, { scaleX: -1 })
-          .to(activeWorker, {
-            x: window.innerWidth * 0.55,
-            duration: 1.6,
-            ease: "power1.in",
-            onUpdate: function() {
-              activeWorker.style.transform += ` translateY(${Math.sin(this.progress() * 15) * 2}px)`;
-            }
-          })
-          .set(activeWorker, { opacity: 0 });
-
-        return tl;
-      }
-
-      // 执行三个典型员工拿取过程
-      masterTl.add(takeItemSequence("Staff #04", 4, false, false))
-              .add(takeItemSequence("Staff #07", 42, true, false), "+=0.5")  // 大量拿取，报警
-              .add(takeItemSequence("Staff #09", 35, false, true), "+=0.5"); // 库存见底，补货倒计时加速
-
-      // 阶段 4：补货员推车从柜子后方进场补货
-      masterTl.to("#restocker-unit", {
-        x: window.innerWidth * 0.27,
-        duration: 2.5,
-        ease: "power1.inOut"
-      })
-      .call(() => toggleLockerDoor(true))
-      // 道具小方块从小车“飞入”柜子
-      .set(flyingBox, { 
-        x: window.innerWidth * 0.27 + 20, 
-        y: 65, 
-        opacity: 1 
-      })
-      .to(flyingBox, {
-        x: window.innerWidth * 0.28 + 10,
-        y: 110,
-        duration: 0.6,
-        ease: "power2.out"
-      })
-      .set(flyingBox, { opacity: 0 })
-      .to({}, { duration: 0.6 }) // 补货停顿
-      .call(() => toggleLockerDoor(false))
-
-      // 阶段 5：手机数据刷新，推车离开
-      .call(() => {
-        currentStock = INITIAL_STOCK;
-        forecastDemand = 1200;
-        daysRemaining = 14;
-        stockEl.innerText = currentStock;
-        forecastEl.innerText = forecastDemand.toLocaleString();
-        timerEl.innerText = `${daysRemaining} Days 08 Hrs`;
-
-        const restockLog = document.createElement('div');
-        restockLog.className = "log-enter p-2 bg-emerald-50 rounded border-l-4 border-emerald-600 border border-emerald-200 flex justify-between items-center text-emerald-950 font-bold shadow-sm";
-        restockLog.innerHTML = `
-          <div>
-            <span class="font-black text-emerald-700">[RESTOCK COMPLETED]</span> 
-            <span class="text-slate-500 font-normal ml-1">${getTimestamp()}</span>
-            <div class="text-[9px] text-emerald-800">Batch auto-delivered to Bin SKU-3</div>
-          </div>
-          <span class="text-emerald-700 font-black">+81</span>
-        `;
-        logList.prepend(restockLog);
-      })
-      .to("#restocker-unit", {
-        x: window.innerWidth * 0.6,
-        duration: 2,
-        ease: "power1.in",
-        delay: 0.5
-      })
-      .set("#restocker-unit", { x: 0 }); // 重置补货员位置准备下一轮
-    }
-
-    window.onload = runSimulation;
-  </script>
-</body>
-</html>
+      // ================= 环节 2：小人2 流水线接力，大量取用触发橘色呼吸灯 =================
+      tl.set(worker2, { x: 45, y: targetY + 120, opacity: 1, scaleX: 1 }, "step1-leave-=1.2")
